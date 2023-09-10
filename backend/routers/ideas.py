@@ -30,12 +30,25 @@ class CreateIdeaRequest(BaseModel):
     content: str
     category: Literal["General", "Technology", "Marketing", "Business", "Application", "Tools"]
 
+    model_config= {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "title": "LinkedIn Web Crawler",
+                    "content": "A LinkedIn scraper in Python is a script or program that extracts data from LinkedIn profiles or pages using web scraping techniques. It typically leverages libraries like BeautifulSoup and requests to access and retrieve information from LinkedIn's public web pages.",
+                    "category": "Application"
+                }
+            ]
+        }
+    }
+
 
 class IdeaResponseModel(BaseModel):
     id: int
     title: str
     content: str
     category: str
+    owner_name: str
 
 
 # CREATING A USER DEPENDENCY FOR JWT AUTHORIZATION
@@ -44,15 +57,18 @@ user_dependency = Annotated[dict, Depends(get_current_user)]
 
 # CREATING ROUTES FOR IDEA
 @router.get('/', status_code=status.HTTP_200_OK)
-async def get_ideas(user: user_dependency, db: db_dependency):
+async def get_ideas(user: user_dependency, db: db_dependency) -> list[IdeaResponseModel]:
     if user is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication Failed")
     
-    return db.query(Idea).all()
+    idea_list = db.query(Idea).all()
+    idea_model_list = [IdeaResponseModel(id=idea.id, title=idea.title, content=idea.content, category=idea.category, owner_name=(db.query(Account.username).filter(Account.id == idea.owner).first())[0]) for idea in idea_list]
+    
+    return idea_model_list
 
 
 @router.get('/{content_id}', status_code=status.HTTP_200_OK)
-async def get_idea(user: user_dependency, db: db_dependency, content_id: int = Path(gt=0)):
+async def get_idea(user: user_dependency, db: db_dependency, content_id: int = Path(gt=0)) -> IdeaResponseModel:
     if user is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication Failed")
     
@@ -60,11 +76,20 @@ async def get_idea(user: user_dependency, db: db_dependency, content_id: int = P
     if idea_model is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Idea not found")
     
-    return idea_model
+    owner_model = db.query(Account.username).filter(Account.id == idea_model.owner).first()
+    idea_model_with_owner = IdeaResponseModel(
+        id = idea_model.id,
+        title = idea_model.title,
+        content = idea_model.content,
+        category = idea_model.category,
+        owner_name = owner_model[0]
+        )
+    
+    return idea_model_with_owner
 
 
 @router.post('/', status_code=status.HTTP_204_NO_CONTENT)
-async def create_idea(user: user_dependency, db: db_dependency, create_idea_request: CreateIdeaRequest, content_id: int = Path(gt=0)):
+async def create_idea(user: user_dependency, db: db_dependency, create_idea_request: CreateIdeaRequest):
     if user is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication Failed")
     
