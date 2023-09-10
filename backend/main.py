@@ -103,7 +103,7 @@ async def terms_of_services(request: Request):
 
 
 # INCLUDING OTHER ROUTES
-app.include_router(superuser.router, tags=["Super"])
-app.include_router(admin.router, tags=["Admin"])
-app.include_router(auth.router, tags=["Account"])
 app.include_router(ideas.router, tags=["Ideas"])
+app.include_router(auth.router, tags=["Account"])
+app.include_router(admin.router, tags=["Admin"])
+app.include_router(superuser.router, tags=["Super"])

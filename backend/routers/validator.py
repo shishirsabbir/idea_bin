@@ -24,4 +24,9 @@ def get_db():
 db_dependency = Annotated[Session, Depends(get_db)]
 
 
+# SETUP APP KEY FOR FRONTEND
+APP_KEY = "b6655a6929beb2ad975ac68b8373db51"
+
+
 # PYDANTIC CLASSES FOR CREATE IDEAS OR GET IDEAS
+
