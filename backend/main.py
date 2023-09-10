@@ -1,5 +1,8 @@
 # IMPORTING MODULES
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.templating import Jinja2Templates
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from database import Base, engine
 from routers import auth, admin, superuser, ideas
 
@@ -30,20 +33,28 @@ The Ideas Storing API is the ideal solution for building a collaborative and inn
 
 tags_metadata = [
     {
-        "name": "Super Users",
-        "description": "Maintainance for the Website"
+        "name": "Homepage",
+        "description": "Root Address of the API application"
     },
     {
-        "name": "Admin",
-        "description": "Administration Routes"
+        "name": "Terms of Services",
+        "description": "Terms of Service for the API"
+    },
+    {
+        "name": "Ideas",
+        "description": "Get, Post, Update and Delete Idea's Routes"
     },
     {
         "name": "Account",
         "description": "Create Account, Login and Authentication Routes"
     },
     {
-        "name": "Ideas",
-        "description": "Get, Post, Update and Delete Idea's Routes"
+        "name": "Admin",
+        "description": "Administration Routes"
+    },
+    {
+        "name": "Super",
+        "description": "Maintainance for the Website, This section will be deleted after the final version"
     }
 ]
 
@@ -70,14 +81,29 @@ app = FastAPI(
 Base.metadata.create_all(bind=engine)
 
 
-# HOMEPAGE ROUTE
+# DEFINING TEMPLATE DIRECTORY
+templates = Jinja2Templates(directory="templates")
 
 
-# TERMS OF SERVICE ROUTE
+# MOUNTING STATIC FILES
+app.mount('/static', StaticFiles(directory="static"), name="static")
+
+
+
+# API HOME PAGE ROUTE
+@app.get('/', response_class=HTMLResponse, tags=["Homepage"])
+async def home(request: Request):
+    return templates.TemplateResponse("home.html", {"request": request})
+
+
+# TERMS ROUTE
+@app.get('/terms', response_class=HTMLResponse, tags=["Terms of Services"])
+async def terms_of_services(request: Request):
+    return templates.TemplateResponse("terms.html", {"request": request})
 
 
 # INCLUDING OTHER ROUTES
-app.include_router(superuser.router, tags=["Super Users"])
+app.include_router(superuser.router, tags=["Super"])
 app.include_router(admin.router, tags=["Admin"])
 app.include_router(auth.router, tags=["Account"])
 app.include_router(ideas.router, tags=["Ideas"])
