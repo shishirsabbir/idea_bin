@@ -4,7 +4,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from database import Base, engine
-from routers import auth, admin, superuser, ideas
+from routers import auth, admin, superuser, ideas, validator
 
 
 # API INFORMATION
@@ -50,7 +50,11 @@ tags_metadata = [
     },
     {
         "name": "Admin",
-        "description": "Administration Routes"
+        "description": "Administration Routes, Get Users and Delete Users Account"
+    },
+    {
+        "name": "Validator",
+        "description": "Validation data fetching for Frontend"
     },
     {
         "name": "Super",
@@ -106,4 +110,5 @@ async def terms_of_services(request: Request):
 app.include_router(ideas.router, tags=["Ideas"])
 app.include_router(auth.router, tags=["Account"])
 app.include_router(admin.router, tags=["Admin"])
+app.include_router(validator.router, tags=["Validator"])
 app.include_router(superuser.router, tags=["Super"])
