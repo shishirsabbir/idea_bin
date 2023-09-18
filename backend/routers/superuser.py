@@ -80,3 +80,4 @@ async def delete_admin(db: db_dependency, user_id: int = Path(gt=0)):
     
     db.query(Account).filter(Account.id == user_id).filter(Account.role == "admin").delete()
     db.commit()
+

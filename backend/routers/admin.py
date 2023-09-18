@@ -26,6 +26,7 @@ db_dependency = Annotated[Session, Depends(get_db)]
 
 # PYDANTIC CLASSES FOR RESPONSE AND REQUEST DATA
 class UserResponseModel(BaseModel):
+    id: int
     first_name: str
     last_name: str
     username: str
@@ -44,7 +45,7 @@ async def get_all_users(user: user_dependency, db: db_dependency) -> list[UserRe
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not an Admin to access the data")
     
     users_list = db.query(Account).all()
-    users_list_model = [UserResponseModel(first_name=user.first_name, last_name=user.last_name, username=user.username, email=user.email, role= user.role) for user in users_list]
+    users_list_model = [UserResponseModel(id=user.id, first_name=user.first_name, last_name=user.last_name, username=user.username, email=user.email, role= user.role) for user in users_list]
     return users_list_model
 
 
@@ -59,6 +60,7 @@ async def get_user(user: user_dependency, db: db_dependency, user_id: int = Path
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Account not found")
     
     user_info = UserResponseModel(
+        id=user_model.id,
         first_name=user_model.first_name,
         last_name=user_model.last_name,
         username=user_model.username,
@@ -69,8 +71,8 @@ async def get_user(user: user_dependency, db: db_dependency, user_id: int = Path
     return user_info
 
 
-@router.delete('/users/{user_id}', status_code=status.HTTP_200_OK)
-async def delete_user(user: user_dependency, db: db_dependency, user_id: int = Path(gt=0)) -> UserResponseModel:
+@router.delete('/users/{user_id}', status_code=status.HTTP_204_NO_CONTENT)
+async def delete_user(user: user_dependency, db: db_dependency, user_id: int = Path(gt=0)):
     if user is None or user.get("user_role") != "admin":
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not an Admin to access the data")
     
@@ -81,3 +83,4 @@ async def delete_user(user: user_dependency, db: db_dependency, user_id: int = P
     
     db.query(Account).filter(Account.id == user_id).delete()
     db.commit()
+

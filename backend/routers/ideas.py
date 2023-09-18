@@ -143,3 +143,5 @@ async def delete_idea(user: user_dependency, db: db_dependency, content_id: int 
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Idea not found")
     
     db.query(Idea).filter(Idea.id == content_id).delete()
+    db.commit()
+    

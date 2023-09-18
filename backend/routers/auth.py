@@ -38,7 +38,7 @@ class CreateAccountRequest(BaseModel):
     username: str
     email: str
     password: str
-    role: Literal["admin", "developer", "user"] # can not create a admin account
+    role: Literal["developer", "user"] # can not create a admin account
 
     model_config= {
         "json_schema_extra": {
@@ -133,7 +133,7 @@ form_dependency = Annotated[OAuth2PasswordRequestForm, Depends()]
 @router.post('/login', response_model=Token)
 async def login_for_access_token(db: db_dependency, form_data: form_dependency):
     account_model = authenticate_user(form_data.username, form_data.password, db)
-    if account_model is None:
+    if not account_model:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Couldn't validate the credentials")
     
     token = create_access_token(username = account_model.username, user_id = account_model.id, user_role = account_model.role, expires_delta=timedelta(minutes=60))
