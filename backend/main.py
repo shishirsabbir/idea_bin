@@ -5,6 +5,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from database import Base, engine
 from routers import auth, admin, superuser, ideas, validator
+from fastapi.middleware.cors import CORSMiddleware
 
 
 # API INFORMATION
@@ -78,6 +79,20 @@ app = FastAPI(
         "name": "MIT License",
         "url": "https://github.com/shishirsabbir/idea_bin/blob/main/LICENSE"
     }
+)
+
+
+# SETTING UP CORS
+origins = [
+    "*"
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 

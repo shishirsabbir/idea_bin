@@ -61,7 +61,7 @@ async def create_admin_account(db: db_dependency, create_admin_account_request: 
     account_model = Account(
         first_name = create_admin_account_request.first_name.casefold(),
         last_name = create_admin_account_request.last_name.casefold(),
-        username = create_admin_account_request.username.casefold(),
+        username = create_admin_account_request.username,
         email = create_admin_account_request.email,
         hashed_password = bcrypt_context.hash(create_admin_account_request.password),
         role = "admin"
