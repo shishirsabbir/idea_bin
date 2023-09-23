@@ -1,10 +1,10 @@
 # IMPORTING MODULES
 from fastapi import APIRouter, Depends, HTTPException, status, Path
 from database import SessionLocal, Account, Idea
-from typing import Annotated, Literal
+from typing import Annotated
 from sqlalchemy.orm import Session
 from .auth import get_current_user
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 # DECLARING THE ROUTER APP
@@ -46,7 +46,7 @@ class CreateIdeaRequest(BaseModel):
 
 class UpdateIdeaRequest(BaseModel):
     title: str
-    content: str
+    content: str = Field(min_length=10)
     # category: Literal["General", "Technology", "Marketing", "Business", "Application", "Tools"]
     subtitle: str
 
