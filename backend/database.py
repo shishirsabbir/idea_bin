@@ -74,7 +74,7 @@ class Vote(Base):
 
     id = Column(Integer, primary_key=True)
     author_id = Column(Integer, ForeignKey('accounts.id'), nullable=False)
-    post_id = Column(Integer, ForeignKey('ideas.id'), nullable=False)
+    idea_id = Column(Integer, ForeignKey('ideas.id'), nullable=False)
     
     owner = relationship('Account', back_populates='vote')
     idea_post = relationship('Idea', back_populates='vote')

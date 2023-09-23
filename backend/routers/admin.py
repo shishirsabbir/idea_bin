@@ -83,4 +83,3 @@ async def delete_user(user: user_dependency, db: db_dependency, user_id: int = P
     
     db.query(Account).filter(Account.id == user_id).delete()
     db.commit()
-

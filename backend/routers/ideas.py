@@ -107,7 +107,7 @@ async def get_idea(user: user_dependency, db: db_dependency, content_id: int = P
     return idea_model_response
 
 
-@router.post('/', status_code=status.HTTP_204_NO_CONTENT)
+@router.post('/', status_code=status.HTTP_201_CREATED)
 async def create_idea(user: user_dependency, db: db_dependency, create_idea_request: CreateIdeaRequest):
     if user is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication Failed")
@@ -144,6 +144,11 @@ async def delete_idea(user: user_dependency, db: db_dependency, content_id: int 
     if idea_model is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Idea not found")
     
-    db.query(Idea).filter(Idea.id == content_id).delete()
-    db.commit()
+    if idea_model.author == user.get("user_id"):
+        db.query(Idea).filter(Idea.id == content_id).delete()
+        db.commit()
+    else:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You can't not delete other users post, unless you are admin")
+
+    
     

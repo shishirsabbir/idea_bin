@@ -4,7 +4,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from database import Base, engine
-from routers import auth, admin, superuser, ideas, validator
+from routers import auth, admin, superuser, ideas, interaction
 from fastapi.middleware.cors import CORSMiddleware
 
 
@@ -48,6 +48,10 @@ tags_metadata = [
     {
         "name": "Ideas",
         "description": "Get, Post, Update and Delete Idea's Routes"
+    },
+    {
+        "name": "Interacts",
+        "description": "Vote and Comment Interaction Routes"
     },
     {
         "name": "Terms of Services",
@@ -126,4 +130,5 @@ app.include_router(superuser.router, tags=["Super"])
 app.include_router(admin.router, tags=["Admin"])
 app.include_router(auth.router, tags=["Account"])
 app.include_router(ideas.router, tags=["Ideas"])
+app.include_router(interaction.router, tags=["Interacts"])
 # app.include_router(validator.router, tags=["Validator"])
