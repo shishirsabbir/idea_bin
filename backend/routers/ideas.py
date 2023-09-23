@@ -67,7 +67,7 @@ class IdeaResponseModel(BaseModel):
     id: int
     title: str
     content: str
-    category: str
+    subtitle: str
     author: int
 
 
@@ -112,7 +112,7 @@ async def create_idea(user: user_dependency, db: db_dependency, create_idea_requ
     if user is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication Failed")
     
-    idea_model = Idea(**create_idea_request.model_dump(), owner=user.get("user_id"))
+    idea_model = Idea(**create_idea_request.model_dump(), author=user.get("user_id"))
 
     db.add(idea_model)
     db.commit()
