@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Path
 from database import SessionLocal, Account
 from typing import Annotated, Literal
 from sqlalchemy.orm import Session
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from datetime import datetime, timedelta
@@ -38,7 +38,7 @@ class CreateAccountRequest(BaseModel):
     username: str
     email: str
     password: str
-    role: Literal["developer", "user"] # can not create a admin account
+    role: str = Field(default="user") # can not create a admin account
 
     model_config= {
         "json_schema_extra": {
@@ -48,8 +48,7 @@ class CreateAccountRequest(BaseModel):
                     "last_name": "Doe",
                     "username": "john_doe",
                     "email": "johndoe@mail.com",
-                    "password": "test123",
-                    "role": "developer"
+                    "password": "test123"
                 }
             ]
         }
@@ -77,7 +76,22 @@ class AccountInfoRespone(BaseModel):
     last_name: str
     username: str
     email: str
-    role: str
+    role: str = Field(default="user")
+
+
+class ValidateRequest(BaseModel):
+    username: str | None = None
+    email: str | None = None
+
+    model_config= {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "username/email": "username/user@mail.com"
+                }
+            ]
+        }
+    }
 
 
 #  AUTHENTICATION AND AUTHORIZATION CONFIGURATION
@@ -106,6 +120,24 @@ def create_access_token(username: str, user_id: int, user_role: str, expires_del
     to_encode.update({"exp": expires})
 
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+
+# FUNCTION FOR CHECKING UNIQUE USERNAME
+def check_username(username: str, db):
+    user_model = db.query(Account).filter(Account.username == username).first()
+    if user_model:
+        return True
+    # IF USER EXIST
+    return False
+
+
+# FUNCTION FOR CHECKING UNIQUE USERNAME
+def check_email(email: str, db):
+    user_model = db.query(Account).filter(Account.email == email).first()
+    if user_model:
+        return True
+    # IF USER EXIST
+    return False
 
 
 # FUNCTION FOR GET CURRENT USER
@@ -142,13 +174,20 @@ async def login_for_access_token(db: db_dependency, form_data: form_dependency):
 
 @router.post('/register', status_code=status.HTTP_201_CREATED)
 async def create_account(db: db_dependency, create_account_request: CreateAccountRequest):
+
+    if check_username(create_account_request.username, db):
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=f"Username {create_account_request.username} is already in use.")
+    
+    if check_email(create_account_request.email, db):
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=f"Email {create_account_request.email} is already in use.")
+
     account_model = Account(
         first_name = create_account_request.first_name.casefold(),
         last_name = create_account_request.last_name.casefold(),
         username = create_account_request.username.casefold(),
         email = create_account_request.email,
         hashed_password = bcrypt_context.hash(create_account_request.password),
-        role = create_account_request.role.casefold()
+        role = "user"
     )
 
     db.add(account_model)
@@ -189,3 +228,13 @@ async def get_account_info(user: user_dependency, db: db_dependency) -> AccountI
 
     return user_info
 
+
+@router.post("/validate/", status_code=status.HTTP_200_OK)
+async def validation(db: db_dependency, validate_request: ValidateRequest):
+    if validate_request.username:
+        user_exist = check_username(validate_request.username, db)
+        return  {"status": "exist", "message": f"{validate_request.username} is not available"} if user_exist else {"status": "not exist", "message": f"{validate_request.username} is available"}
+    if validate_request.email:
+        email_exist = check_email(validate_request.email, db)
+        return {"status": "exist", "message": f"{validate_request.email} is not available"} if email_exist else {"status": "not exist", "message": f"{validate_request.email} is available"}
+    

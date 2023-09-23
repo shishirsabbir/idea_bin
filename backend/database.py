@@ -1,7 +1,7 @@
 # IMPORTING MODULES
 from datetime import datetime
 from sqlalchemy import create_engine, Column, Integer, String, Boolean, DateTime, Enum, ForeignKey
-from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.orm import sessionmaker, declarative_base, relationship
 from sqlalchemy.sql import func
 
 
@@ -30,8 +30,12 @@ class Account(Base):
     last_name = Column(String, nullable=False)
     email = Column(String, nullable=False)
     hashed_password = Column(String, nullable=False)
-    role = Column(Enum('admin', 'developer', 'user', name="user_role"), nullable=False)
+    role = Column(Enum('admin', 'user', name="user_role"), nullable=False)
     created_on = Column(DateTime, server_default=func.now())
+
+    idea_post = relationship("Idea", back_populates="owner")
+    vote = relationship("Vote", back_populates="owner")
+    comment = relationship("Comment", back_populates="owner")
 
 
 class Idea(Base):
@@ -40,14 +44,43 @@ class Idea(Base):
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, nullable=False)
     content = Column(String, nullable=False)
-    category = Column(Enum("General", "Technology", "Marketing", "Business", "Application", "Tools", name="idea_category"), nullable=False)
-    owner = Column(Integer, ForeignKey("accounts.id"))
+    subtitle = Column(String, nullable=False)
+    # category = Column(Enum("General", "Technology", "Marketing", "Business", "Application", "Tools", name="idea_category"), nullable=False)
+    author = Column(Integer, ForeignKey("accounts.id"), nullable=False)
+
+    owner = relationship("Account", back_populates="idea_post")
+    comment = relationship("Comment", back_populates="idea_post")
+    vote = relationship("Vote", back_populates="idea_post")
+
+
+Account.idea_post = relationship("Idea", back_populates="owner", cascade="all, delete-orphan")
 
 
 class Comment(Base):
-    __tablename__ = "comments"
+    __tablename__ = 'comments'
 
-    id = Column(Integer, primary_key=True, index=True)
-    comment = Column(String, nullable=False)
+    id = Column(Integer, primary_key=True)
+    author_id = Column(Integer, ForeignKey('accounts.id'), nullable=False)
+    idea_id = Column(Integer, ForeignKey('ideas.id'), nullable=False)
+    content = Column(String, nullable=False)
     created_on = Column(DateTime, server_default=func.now())
-    owner = Column(Integer, ForeignKey("accounts.id"))
+    
+    owner = relationship("Account", back_populates="comment")
+    idea_post = relationship("Idea", back_populates="comment")
+
+
+class Vote(Base):
+    __tablename__ = 'votes'
+
+    id = Column(Integer, primary_key=True)
+    author_id = Column(Integer, ForeignKey('accounts.id'), nullable=False)
+    post_id = Column(Integer, ForeignKey('ideas.id'), nullable=False)
+    
+    owner = relationship('Account', back_populates='vote')
+    idea_post = relationship('Idea', back_populates='vote')
+
+
+Account.comment = relationship('Comment', back_populates="owner", cascade="all, delete-orphan")
+Account.vote = relationship('Vote', back_populates='owner', cascade="all, delete-orphan")
+Idea.comment = relationship('Comment', back_populates='idea_post', cascade="all, delete-orphan")
+Idea.vote = relationship('Vote', back_populates='idea_post', cascade="all, delete-orphan")

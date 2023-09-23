@@ -33,33 +33,33 @@ The Ideas Storing API is the ideal solution for building a collaborative and inn
 
 tags_metadata = [
     {
-        "name": "Homepage",
-        "description": "Root Address of the API application"
-    },
-    {
-        "name": "Terms of Services",
-        "description": "Terms of Service for the API"
-    },
-    {
-        "name": "Ideas",
-        "description": "Get, Post, Update and Delete Idea's Routes"
-    },
-    {
-        "name": "Account",
-        "description": "Create Account, Login and Authentication Routes"
+        "name": "Super",
+        "description": "Maintainance for the Website, This section will be deleted after the final version"
     },
     {
         "name": "Admin",
         "description": "Administration Routes, Get Users and Delete Users Account"
     },
     {
-        "name": "Validator",
-        "description": "Validation data fetching for Frontend"
+        "name": "Account",
+        "description": "Create Account, Login and Authentication Routes"
     },
     {
-        "name": "Super",
-        "description": "Maintainance for the Website, This section will be deleted after the final version"
-    }
+        "name": "Ideas",
+        "description": "Get, Post, Update and Delete Idea's Routes"
+    },
+    {
+        "name": "Terms of Services",
+        "description": "Terms of Service for the API"
+    },
+    {
+        "name": "Homepage",
+        "description": "Root Address of the API application"
+    },
+    # {
+    #     "name": "Validator",
+    #     "description": "Validation data fetching for Frontend"
+    # },
 ]
 
 app = FastAPI(
@@ -107,8 +107,8 @@ async def terms_of_services(request: Request):
 
 
 # INCLUDING OTHER ROUTES
-app.include_router(ideas.router, tags=["Ideas"])
-app.include_router(auth.router, tags=["Account"])
-app.include_router(admin.router, tags=["Admin"])
-app.include_router(validator.router, tags=["Validator"])
 app.include_router(superuser.router, tags=["Super"])
+app.include_router(admin.router, tags=["Admin"])
+app.include_router(auth.router, tags=["Account"])
+app.include_router(ideas.router, tags=["Ideas"])
+# app.include_router(validator.router, tags=["Validator"])

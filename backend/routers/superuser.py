@@ -1,10 +1,10 @@
 # IMPORTING MODULES
 from fastapi import APIRouter, Depends, HTTPException, status, Path
 from database import SessionLocal, Account
-from typing import Annotated, Literal
+from typing import Annotated
 from sqlalchemy.orm import Session
 from .auth import bcrypt_context
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 
@@ -32,7 +32,7 @@ class CreateAdminAccountRequest(BaseModel):
     username: str
     email: str
     password: str
-    role: Literal["developer", "user", "admin"] # can not create a admin account
+    role: str = Field(default="admin") # can not create a admin account
 
     model_config= {
         "json_schema_extra": {
@@ -42,8 +42,7 @@ class CreateAdminAccountRequest(BaseModel):
                     "last_name": "Doe",
                     "username": "john_doe",
                     "email": "johndoe@mail.com",
-                    "password": "test123",
-                    "role": "developer"
+                    "password": "test123"
                 }
             ]
         }
@@ -65,7 +64,7 @@ async def create_admin_account(db: db_dependency, create_admin_account_request: 
         username = create_admin_account_request.username.casefold(),
         email = create_admin_account_request.email,
         hashed_password = bcrypt_context.hash(create_admin_account_request.password),
-        role = create_admin_account_request.role.casefold()
+        role = "admin"
     )
 
     db.add(account_model)
