@@ -55,20 +55,20 @@ class CommentIdeaRequest(BaseModel):
     }
 
 
-class CommentDeleteRequest(BaseModel):
-    comment_id: int
-    idea_id: int
+# class CommentDeleteRequest(BaseModel):
+#     comment_id: int
+#     idea_id: int
 
-    model_config= {
-        "json_schema_extra": {
-            "examples": [
-                {
-                    "comment_id": "1",
-                    "idea_id": "1"
-                }
-            ]
-        }
-    }
+#     model_config= {
+#         "json_schema_extra": {
+#             "examples": [
+#                 {
+#                     "comment_id": "1",
+#                     "idea_id": "1"
+#                 }
+#             ]
+#         }
+#     }
 
 
 # CREATING A USER DEPENDENCY FOR JWT AUTHORIZATION
@@ -112,18 +112,17 @@ async def comment_on_idea(user: user_dependency, db: db_dependency, comment_idea
     db.commit()
 
 
-@router.delete("/comment", status_code=status.HTTP_201_CREATED)
-async def comment_on_idea(user: user_dependency, db: db_dependency, comment_delete_request: CommentDeleteRequest):
-    if user is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication Failed")
+# @router.delete("/comment", status_code=status.HTTP_201_CREATED)
+# async def comment_on_idea(user: user_dependency, db: db_dependency, comment_delete_request: CommentDeleteRequest):
+#     if user is None:
+#         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication Failed")
     
-    comment_model = db.query(Comment).filter(Comment.id == comment_delete_request.comment_id).filter(Comment.idea_id == comment_delete_request.idea_id).first()
+#     comment_model = db.query(Comment).filter(Comment.id == comment_delete_request.comment_id).filter(Comment.idea_id == comment_delete_request.idea_id).first()
 
-    if user.get("user") == comment_model.author_id:
-        db.query(Comment).filter(Comment.id == comment_delete_request.comment_id).filter(Comment.idea_id == comment_delete_request.idea_id).delete()
-        db.commit()
-    else:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You can't not delete other users comments, unless you are admin")
-
+#     if user.get("user") == comment_model.author_id:
+#         db.query(Comment).filter(Comment.id == comment_delete_request.comment_id).filter(Comment.idea_id == comment_delete_request.idea_id).delete()
+#         db.commit()
+#     else:
+#         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You can't not delete other users comments, unless you are admin")
 
     
